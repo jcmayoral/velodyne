@@ -29,16 +29,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost COMPONENTS signals)
 find_package(Eigen3 REQUIRED)
+find_package(YAML-CPP 0.6 REQUIRED)
 # Resolve system dependency on yaml-cpp, which apparently does not
 # provide a CMake find_package() module.
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
-find_path(YAML_CPP_INCLUDE_DIR
-          NAMES yaml_cpp.h
-          PATHS ${YAML_CPP_INCLUDE_DIRS})
-find_library(YAML_CPP_LIBRARY
-             NAMES YAML_CPP
-             PATHS ${YAML_CPP_LIBRARY_DIRS})
+
+#find_package(PkgConfig REQUIRED)
+#pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+#find_path(YAML_CPP_INCLUDE_DIR
+#          NAMES yaml_cpp.h
+#          PATHS ${YAML_CPP_INCLUDE_DIRS})
+#find_library(YAML_CPP_LIBRARY
+#             NAMES YAML_CPP
+#             PATHS ${YAML_CPP_LIBRARY_DIRS})
 
 link_directories(${YAML_CPP_LIBRARY_DIRS})
 
@@ -46,13 +48,14 @@ generate_dynamic_reconfigure_options(
   cfg/CloudNode.cfg cfg/TransformNode.cfg
 )
 
-if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
-  add_definitions(-DHAVE_NEW_YAMLCPP)
-endif(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+#if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+add_definitions(-DHAVE_NEW_YAMLCPP=1)
+#endif(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
 
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
   ${EIGEN3_INCLUDE_DIR}
+  ${YAML_CPP_INCLUDE_DIR}
 )
 
 catkin_package(
