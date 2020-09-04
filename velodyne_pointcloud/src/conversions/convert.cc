@@ -31,6 +31,7 @@ namespace velodyne_pointcloud
     private_nh.param<double>("min_range", config_.min_range, 10.0);
     private_nh.param<double>("max_range", config_.max_range, 200.0);
     private_nh.param<bool>("organize_cloud", config_.organize_cloud, false);
+    private_nh.param<bool>("lidarsafe", config_.lidarsafe, false);
 
     boost::optional<velodyne_pointcloud::Calibration> calibration = data_->setup(private_nh);
     if(calibration)
@@ -52,10 +53,20 @@ namespace velodyne_pointcloud
     }
     else
     {
-      container_ptr_ = boost::shared_ptr<PointcloudXYZIR>(
+      ROS_ERROR_STREAM(config_.lidarsafe);
+      if (config_.lidarsafe){
+        ROS_ERROR_STREAM("CONFIG lidarsafe");
+        container_ptr_ = boost::shared_ptr<PointcloudXYZIRSafe>(
+            new PointcloudXYZIRSafe(config_.max_range, config_.min_range,
+                                config_.target_frame, config_.fixed_frame,
+                                data_->scansPerPacket()));
+      }
+      else{
+        container_ptr_ = boost::shared_ptr<PointcloudXYZIR>(
           new PointcloudXYZIR(config_.max_range, config_.min_range,
-              config_.target_frame, config_.fixed_frame,
-              data_->scansPerPacket()));
+                              config_.target_frame, config_.fixed_frame,
+                              data_->scansPerPacket()));
+      }
     }
 
 
@@ -101,9 +112,11 @@ namespace velodyne_pointcloud
     config_.min_range = config.min_range;
     config_.max_range = config.max_range;
 
-    if(first_rcfg_call || config.organize_cloud != config_.organize_cloud){
+    if(first_rcfg_call || config.organize_cloud != config_.organize_cloud || config_.lidarsafe != config.lidarsafe){
         first_rcfg_call = false;
         config_.organize_cloud = config.organize_cloud;
+        config_.lidarsafe = config.lidarsafe;
+
         if(config_.organize_cloud) // TODO only on change
         {
             ROS_INFO_STREAM("Using the organized cloud format...");
@@ -114,13 +127,24 @@ namespace velodyne_pointcloud
         }
         else
         {
+          ROS_ERROR_STREAM(config_.lidarsafe);
+          if (config_.lidarsafe)
+          {
+            ROS_ERROR_STREAM("CONFIG lidarsafe");
+            container_ptr_ = boost::shared_ptr<PointcloudXYZIRSafe>(
+                new PointcloudXYZIRSafe(config_.max_range, config_.min_range,
+                                    config_.target_frame, config_.fixed_frame,
+                                    data_->scansPerPacket()));
+          }
+          else
+          {
             container_ptr_ = boost::shared_ptr<PointcloudXYZIR>(
-                new PointcloudXYZIR(config_.max_range, config_.min_range,
-                    config_.target_frame, config_.fixed_frame,
-                    data_->scansPerPacket()));
+              new PointcloudXYZIR(config_.max_range, config_.min_range,
+                                  config_.target_frame, config_.fixed_frame,
+                                  data_->scansPerPacket()));
+          }
         }
     }
-
     container_ptr_->configure(config_.max_range, config_.min_range, config_.fixed_frame, config_.target_frame);
 
   }

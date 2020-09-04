@@ -10,6 +10,7 @@
   <arg name="max_range" default="130.0" />
   <arg name="min_range" default="0.9" />
   <arg name="organize_cloud" default="false" />
+  <arg name="lidarsafe" default="false" />
 
   <node pkg="nodelet" type="nodelet" name="$(arg manager)_cloud"
         args="load velodyne_pointcloud/CloudNodelet $(arg manager)">
@@ -20,5 +21,6 @@
     <param name="max_range" value="$(arg max_range)"/>
     <param name="min_range" value="$(arg min_range)"/>
     <param name="organize_cloud" value="$(arg organize_cloud)"/>
+    <param name="lidarsafe" value="$(arg lidarsafe)"/>
   </node>
 </launch>

@@ -50,6 +50,7 @@
 
 #include <dynamic_reconfigure/server.h>
 #include <velodyne_pointcloud/CloudNodeConfig.h>
+#include <velodyne_pointcloud/pointcloudXYZIRSafe.h>
 
 namespace velodyne_pointcloud
 {
@@ -86,6 +87,7 @@ class Convert
       double min_range;              ///< minimum range to publish
       uint16_t num_lasers;           ///< number of lasers
       int npackets;                  ///< number of packets to combine
+      bool lidarsafe;
     }
     Config;
     Config config_;

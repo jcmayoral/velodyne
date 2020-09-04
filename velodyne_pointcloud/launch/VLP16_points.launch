@@ -22,6 +22,7 @@
   <arg name="laserscan_ring" default="-1" />
   <arg name="laserscan_resolution" default="0.007" />
   <arg name="organize_cloud" default="false" />
+  <arg name="lidarsafe" default="false" />
 
   <!-- start nodelet manager and driver nodelets -->
   <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
@@ -50,6 +51,7 @@
     <arg name="max_range" value="$(arg max_range)"/>
     <arg name="min_range" value="$(arg min_range)"/>
     <arg name="organize_cloud" value="$(arg organize_cloud)"/>
+    <arg name="lidarsafe" value="$(arg lidarsafe)"/>
   </include>
 
   <!-- start laserscan nodelet -->

@@ -90,7 +90,7 @@ namespace velodyne_pointcloud
                                           TimeStampStatusParam()));
 
   }
-  
+
   void Transform::reconfigure_callback(
       velodyne_pointcloud::TransformNodeConfig &config, uint32_t level)
   {
@@ -104,9 +104,11 @@ namespace velodyne_pointcloud
 
     boost::lock_guard<boost::mutex> guard(reconfigure_mtx_);
 
-    if(first_rcfg_call || config.organize_cloud != config_.organize_cloud){
+    if(first_rcfg_call || config.organize_cloud != config_.organize_cloud || config_.lidarsafe != config.lidarsafe){
       first_rcfg_call = false;
       config_.organize_cloud = config.organize_cloud;
+      config_.lidarsafe = config.lidarsafe;
+
       if(config_.organize_cloud)
       {
         ROS_INFO_STREAM("Using the organized cloud format...");
@@ -117,10 +119,19 @@ namespace velodyne_pointcloud
       }
       else
       {
-        container_ptr = boost::shared_ptr<PointcloudXYZIR>(
+
+        if (config_.lidarsafe){
+          container_ptr = boost::shared_ptr<PointcloudXYZIRSafe>(
+              new PointcloudXYZIRSafe(config_.max_range, config_.min_range,
+                                  config_.target_frame, config_.fixed_frame,
+                                  data_->scansPerPacket()));
+        }
+        else{
+          container_ptr = boost::shared_ptr<PointcloudXYZIR>(
             new PointcloudXYZIR(config_.max_range, config_.min_range,
                                 config_.target_frame, config_.fixed_frame,
                                 data_->scansPerPacket()));
+        }
       }
     }
     container_ptr->configure(config_.max_range, config_.min_range, config_.fixed_frame, config_.target_frame);

@@ -49,7 +49,8 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <velodyne_pointcloud/rawdata.h>
-#include <velodyne_pointcloud/pointcloudXYZIR.h>
+//#include <velodyne_pointcloud/pointcloudXYZIR.h>
+#include <velodyne_pointcloud/pointcloudXYZIRSafe.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <velodyne_pointcloud/TransformNodeConfig.h>
@@ -92,6 +93,7 @@ private:
     double max_range;          ///< maximum range to publish
     double min_range;          ///< minimum range to publish
     uint16_t num_lasers;       ///< number of lasers
+    bool lidarsafe;
   }
   Config;
   Config config_;

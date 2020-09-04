@@ -198,6 +198,11 @@ public:
     return (range >= config_.min_range && range <= config_.max_range);
   }
 
+  inline bool pointInRangeWithSafety(float x, float y, float z)
+  {
+    return false;
+  }
+
 protected:
   Config config_;
   boost::shared_ptr<tf::TransformListener> tf_ptr;  ///< transform listener
