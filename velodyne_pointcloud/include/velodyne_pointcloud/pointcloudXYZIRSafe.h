@@ -38,6 +38,13 @@
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <velodyne_pointcloud/SafeNodeConfig.h>
+//#include <ctime>
+#include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
+typedef std::chrono::time_point<std::chrono::system_clock> CTime;
+
 namespace velodyne_pointcloud
 {
 class PointcloudXYZIRSafe : public velodyne_rawdata::DataContainerBase
@@ -54,11 +61,25 @@ public:
   virtual void addPoint(float x, float y, float z, const uint16_t ring, const uint16_t azimuth,
                         const float distance, const float intensity, const float time);
 
+  void callback(velodyne_pointcloud::SafeNodeConfig &config, uint32_t level);
+
   sensor_msgs::PointCloud2Iterator<float> iter_x, iter_y, iter_z, iter_intensity, iter_time;
   sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring;
 
 private:
+  boost::shared_ptr<dynamic_reconfigure::Server<velodyne_pointcloud::SafeNodeConfig> > srv_;
   ros::Publisher safe_pub_;
+  float min_x_;
+  float min_y_;
+  float min_z_;
+  float max_x_;
+  float max_y_;
+  float max_z_;
+  boost::mutex mtx;
+  bool init;
+  bool haspublish;
+  double publish_rate;
+  CTime start;
 };
 }  // namespace velodyne_pointcloud
 

@@ -45,7 +45,7 @@ find_package(YAML-CPP 0.6 REQUIRED)
 link_directories(${YAML_CPP_LIBRARY_DIRS})
 
 generate_dynamic_reconfigure_options(
-  cfg/CloudNode.cfg cfg/TransformNode.cfg
+  cfg/CloudNode.cfg cfg/TransformNode.cfg cfg/SafeNode.cfg
 )
 
 #if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
