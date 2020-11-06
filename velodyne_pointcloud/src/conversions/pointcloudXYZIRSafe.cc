@@ -18,45 +18,41 @@ namespace velodyne_pointcloud
         "time", 1, sensor_msgs::PointField::FLOAT32),
         iter_x(cloud, "x"), iter_y(cloud, "y"), iter_z(cloud, "z"),
         iter_ring(cloud, "ring"), iter_intensity(cloud, "intensity"), iter_time(cloud, "time"),
-        init(false)
+        init(false),img()//16,36000,CV_16UC1,0)
   {
     //cv::Mat(rows,cols,CV_32F,0);
-    img = new cv::Mat(16,36000,CV_32F,0);
+    img = cv::Mat::zeros(16,36000, CV_16UC1);
+//          kernel = cv::Mat::ones(config->kernel_size,config->kernel_size,CV_32F )/ (float)(pow(config->kernel_size,2));
 
   };
   
-  void PointcloudXYZIRSafe::publishOutput(cv::Mat& frame, bool rotate){
+  void PointcloudXYZIRSafe::finish(){
     sensor_msgs::Image out_msg;
     cv_bridge::CvImage img_bridge;
     std_msgs::Header header;
+    cv::Mat tmp(img);
+    ROS_INFO_STREAM("IN FINISH");
 
     try{
       //these lines are just for testing rotating image
-      cv::Mat rot=cv::getRotationMatrix2D(cv::Point2f(0,0), 3.1416, 1.0);
+      //`cv::Mat rot=cv::getRotationMatrix2D(cv::Point2f(0,0), 3.1416, 1.0);
       //cv::warpAffine(frame,frame, rot, frame.size());
-      if (rotate){
-        cv::rotate(frame,frame,1);
-      }
+      //if (rotate){
+      //  cv::rotate(frame,frame,1);
+      //}
 
-      frame.convertTo(frame, CV_16UC1);
+      tmp.convertTo(tmp, CV_16UC1);
 
-      //img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, frame);//COLOR
-      //img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, frame);//zed
-      img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::MONO16, frame);//realsense
+      img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::MONO16, tmp);//realsense
       img_bridge.toImageMsg(out_msg); // from cv_bridge to sensor_msgs::Image
     }
     catch (cv_bridge::Exception& e){
+      ROS_ERROR("DID NOT WORK IDIot");
       ROS_ERROR("cv_bridge exception: %s", e.what());
       return;
     }
     img_pub_.publish(out_msg);
-  }
-
-  void PointcloudXYZIRSafe::finish(){
-    //TODO publish image
-    publishOutput(*img);
-    
-    img = new cv::Mat(16,36000,CV_32F,0);
+    ROS_WARN("Theoretically published");
   }
 
   void PointcloudXYZIRSafe::setup(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg){
@@ -100,6 +96,7 @@ namespace velodyne_pointcloud
   void PointcloudXYZIRSafe::callback(velodyne_pointcloud::SafeNodeConfig &config,
                 uint32_t level){
     boost::mutex::scoped_lock ltk(mtx);
+
     min_x_ = config.min_x;
     min_y_ = config.min_y;
     min_z_ = config.min_z;
@@ -107,14 +104,16 @@ namespace velodyne_pointcloud
     max_y_ = config.max_y;
     max_z_ = config.max_z;
     publish_rate = (1.0/config.publish_freq)*1000000000;//nanoseconds;
-    ROS_INFO_STREAM("DEPRECATED RATE -> IGNORED "<< publish_rate);
+    ROS_INFO_STREAM("DEPRECATED RATE -> IGNORED IN SAFE "<< publish_rate);
   }
 
   void PointcloudXYZIRSafe::newLine()
   {}
 
   void PointcloudXYZIRSafe::addPixel(uint16_t azimuth, float distance, float ring){
-    ROS_INFO_STREAM(azimuth << " RING "<< ring);
+    //ROS_INFO_STREAM(azimuth << " RING "<< ring);
+    //img->at<uint16_t>(azimuth+ring*img->rows) = distance; 
+    //ROS_ERROR("DONE");
   }
 
   void PointcloudXYZIRSafe::addPoint(float x, float y, float z, uint16_t ring, const uint16_t azimuth, float distance, float intensity, float time)

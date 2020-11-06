@@ -160,6 +160,8 @@ namespace velodyne_pointcloud
       data_->unpack(scanMsg->packets[i], *container_ptr,  scanMsg->header.stamp);
     }
     // publish the accumulated cloud message
+    ROS_INFO_STREAM("BEFORE FINISH");
+    ROS_INFO_STREAM("AFTER FINISH");
     container_ptr->finish();
     output_.publish(container_ptr->finishCloud());
 

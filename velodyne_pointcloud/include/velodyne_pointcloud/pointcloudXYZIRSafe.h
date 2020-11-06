@@ -62,6 +62,8 @@ public:
                   const std::string& fixed_frame, const unsigned int scans_per_block,
                   boost::shared_ptr<tf::TransformListener> tf_ptr = boost::shared_ptr<tf::TransformListener>());
 
+  virtual void finish();
+
   virtual void newLine();
 
   virtual void setup(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg);
@@ -72,9 +74,6 @@ public:
   void addPixel(uint16_t azimuth, float distance, float ring);
 
   void callback(velodyne_pointcloud::SafeNodeConfig &config, uint32_t level);
-  virtual void finish();
-
-  void publishOutput(cv::Mat& frame, bool rotate=false);
 
   sensor_msgs::PointCloud2Iterator<float> iter_x, iter_y, iter_z, iter_intensity, iter_time;
   sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring;
@@ -94,7 +93,7 @@ private:
   bool haspublish;
   double publish_rate;
   CTime start;
-  cv::Mat* img;
+  cv::Mat img;
 };
 }  // namespace velodyne_pointcloud
 
