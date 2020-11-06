@@ -17,6 +17,7 @@ set(${PROJECT_NAME}_CATKIN_DEPS
     nodelet
     roscpp
     roslib
+    cv_bridge
     sensor_msgs
     tf
     velodyne_driver

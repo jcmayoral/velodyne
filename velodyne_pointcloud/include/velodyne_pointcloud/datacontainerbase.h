@@ -119,6 +119,8 @@ public:
                         const float intensity, const float time) = 0;
   virtual void newLine() = 0;
 
+  virtual void finish() = 0;
+
   const sensor_msgs::PointCloud2& finishCloud()
   {
     cloud.data.resize(cloud.point_step * cloud.width * cloud.height);

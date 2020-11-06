@@ -160,6 +160,7 @@ namespace velodyne_pointcloud
       data_->unpack(scanMsg->packets[i], *container_ptr,  scanMsg->header.stamp);
     }
     // publish the accumulated cloud message
+    container_ptr->finish();
     output_.publish(container_ptr->finishCloud());
 
     diag_topic_->tick(scanMsg->header.stamp);

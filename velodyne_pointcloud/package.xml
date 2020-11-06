@@ -31,6 +31,7 @@
   <depend>dynamic_reconfigure</depend>
   <depend>diagnostic_updater</depend>
   <depend>eigen</depend>
+  <depend>cv_bridge</depend>
 
   <exec_depend>velodyne_laserscan</exec_depend>
 
@@ -38,6 +39,7 @@
   <test_depend>roslaunch</test_depend>
   <test_depend>rostest</test_depend>
   <test_depend>tf2_ros</test_depend>
+  <test_depend>cv_bridge</test_depend>
 
   <export>
     <nodelet plugin="${prefix}/nodelets.xml"/>

@@ -20,7 +20,44 @@ namespace velodyne_pointcloud
         iter_ring(cloud, "ring"), iter_intensity(cloud, "intensity"), iter_time(cloud, "time"),
         init(false)
   {
+    //cv::Mat(rows,cols,CV_32F,0);
+    img = new cv::Mat(16,36000,CV_32F,0);
+
   };
+  
+  void PointcloudXYZIRSafe::publishOutput(cv::Mat& frame, bool rotate){
+    sensor_msgs::Image out_msg;
+    cv_bridge::CvImage img_bridge;
+    std_msgs::Header header;
+
+    try{
+      //these lines are just for testing rotating image
+      cv::Mat rot=cv::getRotationMatrix2D(cv::Point2f(0,0), 3.1416, 1.0);
+      //cv::warpAffine(frame,frame, rot, frame.size());
+      if (rotate){
+        cv::rotate(frame,frame,1);
+      }
+
+      frame.convertTo(frame, CV_16UC1);
+
+      //img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, frame);//COLOR
+      //img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, frame);//zed
+      img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::MONO16, frame);//realsense
+      img_bridge.toImageMsg(out_msg); // from cv_bridge to sensor_msgs::Image
+    }
+    catch (cv_bridge::Exception& e){
+      ROS_ERROR("cv_bridge exception: %s", e.what());
+      return;
+    }
+    img_pub_.publish(out_msg);
+  }
+
+  void PointcloudXYZIRSafe::finish(){
+    //TODO publish image
+    publishOutput(*img);
+    
+    img = new cv::Mat(16,36000,CV_32F,0);
+  }
 
   void PointcloudXYZIRSafe::setup(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg){
     DataContainerBase::setup(scan_msg);
@@ -56,6 +93,7 @@ namespace velodyne_pointcloud
     srv_->setCallback (f);
 
     safe_pub_ = nh.advertise<std_msgs::Bool>("safe_signal",1);
+    img_pub_ = nh.advertise<sensor_msgs::Image>("velodyne_image",1);
 
   }
 
@@ -76,7 +114,7 @@ namespace velodyne_pointcloud
   {}
 
   void PointcloudXYZIRSafe::addPixel(uint16_t azimuth, float distance, float ring){
-    std::cout << azimuth << " RING "<< std::endl;
+    ROS_INFO_STREAM(azimuth << " RING "<< ring);
   }
 
   void PointcloudXYZIRSafe::addPoint(float x, float y, float z, uint16_t ring, const uint16_t azimuth, float distance, float intensity, float time)

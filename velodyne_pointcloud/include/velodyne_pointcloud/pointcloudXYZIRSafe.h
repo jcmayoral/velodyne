@@ -46,6 +46,9 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/core.hpp>
+#include <sensor_msgs/Image.h>
+#include <cv_bridge/cv_bridge.h>
+
 
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::time_point<std::chrono::system_clock> CTime;
@@ -69,6 +72,9 @@ public:
   void addPixel(uint16_t azimuth, float distance, float ring);
 
   void callback(velodyne_pointcloud::SafeNodeConfig &config, uint32_t level);
+  virtual void finish();
+
+  void publishOutput(cv::Mat& frame, bool rotate=false);
 
   sensor_msgs::PointCloud2Iterator<float> iter_x, iter_y, iter_z, iter_intensity, iter_time;
   sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring;
@@ -76,6 +82,7 @@ public:
 private:
   boost::shared_ptr<dynamic_reconfigure::Server<velodyne_pointcloud::SafeNodeConfig> > srv_;
   ros::Publisher safe_pub_;
+  ros::Publisher img_pub_;
   float min_x_;
   float min_y_;
   float min_z_;
@@ -87,7 +94,7 @@ private:
   bool haspublish;
   double publish_rate;
   CTime start;
-  //cv::Mat img;
+  cv::Mat* img;
 };
 }  // namespace velodyne_pointcloud
 
