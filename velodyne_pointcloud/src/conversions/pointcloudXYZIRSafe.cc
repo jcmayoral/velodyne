@@ -75,8 +75,15 @@ namespace velodyne_pointcloud
   void PointcloudXYZIRSafe::newLine()
   {}
 
-  void PointcloudXYZIRSafe::addPoint(float x, float y, float z, uint16_t ring, uint16_t /*azimuth*/, float distance, float intensity, float time)
+  void PointcloudXYZIRSafe::addPixel(uint16_t azimuth, float distance, float ring){
+    std::cout << azimuth << " RING "<< std::endl;
+  }
+
+  void PointcloudXYZIRSafe::addPoint(float x, float y, float z, uint16_t ring, const uint16_t azimuth, float distance, float intensity, float time)
   {
+
+    addPixel(azimuth, distance,ring);
+
     if(!pointInRange(distance)) return;
 
     // convert polar coordinates to Euclidean XYZ

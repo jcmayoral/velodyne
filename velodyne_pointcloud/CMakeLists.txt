@@ -10,6 +10,8 @@ elseif ("${CMAKE_CXX_STANDARD_COMPUTED_DEFAULT}" STREQUAL "98")
   set(CMAKE_CXX_STANDARD 11)
 endif()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 set(${PROJECT_NAME}_CATKIN_DEPS
     angles
     nodelet
@@ -27,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
              ${${PROJECT_NAME}_CATKIN_DEPS}
              roslint)
 
+find_package(OpenCV 3.4.9 EXACT REQUIRED)
 find_package(Boost COMPONENTS signals)
 find_package(Eigen3 REQUIRED)
 find_package(YAML-CPP 0.6 REQUIRED)
@@ -56,6 +59,7 @@ include_directories(include ${catkin_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
   ${EIGEN3_INCLUDE_DIR}
   ${YAML_CPP_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 catkin_package(

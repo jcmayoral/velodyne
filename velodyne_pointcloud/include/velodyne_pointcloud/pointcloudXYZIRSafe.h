@@ -42,6 +42,11 @@
 #include <velodyne_pointcloud/SafeNodeConfig.h>
 //#include <ctime>
 #include <chrono>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/core/core.hpp>
+
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::time_point<std::chrono::system_clock> CTime;
 
@@ -60,6 +65,8 @@ public:
 
   virtual void addPoint(float x, float y, float z, const uint16_t ring, const uint16_t azimuth,
                         const float distance, const float intensity, const float time);
+
+  void addPixel(uint16_t azimuth, float distance, float ring);
 
   void callback(velodyne_pointcloud::SafeNodeConfig &config, uint32_t level);
 
@@ -80,6 +87,7 @@ private:
   bool haspublish;
   double publish_rate;
   CTime start;
+  //cv::Mat img;
 };
 }  // namespace velodyne_pointcloud
 
