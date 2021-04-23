@@ -27,7 +27,7 @@ namespace velodyne_pointcloud
     //Small Size to int8
     //img = cv::Mat::zeros(16,36000, CV_8UC1);
     //Resize Image for testing
-    img = cv::Mat::zeros(16,360, CV_8UC1);
+    img = cv::Mat::zeros(16,120, CV_8UC1);
 
 //          kernel = cv::Mat::ones(config->kernel_size,config->kernel_size,CV_32F )/ (float)(pow(config->kernel_size,2));
 
@@ -37,7 +37,6 @@ namespace velodyne_pointcloud
     sensor_msgs::Image out_msg;
     cv_bridge::CvImage img_bridge;
     std_msgs::Header header;
-    ROS_INFO_STREAM("IN FINISH");
 
     cv::Mat tmp(img);
 
@@ -57,32 +56,24 @@ namespace velodyne_pointcloud
     catch (cv_bridge::Exception& e){
       ROS_ERROR("DID NOT WORK IDIot");
       ROS_ERROR("cv_bridge exception: %s", e.what());
-      img = cv::Mat::zeros(16,360, CV_8UC1);
-      ROS_ERROR_STREAM(*(iter_x));
-      ROS_ERROR_STREAM(*(iter_y));
+      //img = cv::Mat::zeros(16,120, CV_8UC1);
       return;
     }
-    ROS_ERROR("should work");
-      ROS_ERROR_STREAM(sizeof(iter_x)/sizeof(float));
-      ROS_ERROR_STREAM(sizeof(iter_y));
-      ROS_ERROR_STREAM(cloud.point_step * cloud.width * cloud.height);
     img_pub_.publish(out_msg);
-    img = cv::Mat::zeros(16,360, CV_8UC1);
-    ROS_WARN("Theoretically published");
+    //img = cv::Mat::zeros(16,120, CV_8UC1);
   }
 
   void PointcloudXYZIRSafe::setup(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg){
     DataContainerBase::setup(scan_msg);
-    ROS_WARN_STREAM("!!!"<<cloud.point_step);
-    ROS_WARN_STREAM(cloud.width);
-    ROS_WARN_STREAM(cloud.height);
-
+    
     iter_x = sensor_msgs::PointCloud2Iterator<float>(cloud, "x");
     iter_y = sensor_msgs::PointCloud2Iterator<float>(cloud, "y");
     iter_z = sensor_msgs::PointCloud2Iterator<float>(cloud, "z");
     iter_intensity = sensor_msgs::PointCloud2Iterator<float>(cloud, "intensity");
     iter_ring = sensor_msgs::PointCloud2Iterator<uint16_t >(cloud, "ring");
     iter_time = sensor_msgs::PointCloud2Iterator<float >(cloud, "time");
+
+    img = cv::Mat::zeros(16,120, CV_8UC1);
 
     if (!haspublish && init){ //if in the previous pointcloud nothing found then report free
       std_msgs::Bool b;
@@ -95,6 +86,7 @@ namespace velodyne_pointcloud
 
     if (init)
     {
+      ROS_INFO_STREAM("Avoid init");
       return;
     }
     init = true;
@@ -135,6 +127,7 @@ namespace velodyne_pointcloud
     iter_ring = iter_ring + config_.init_width;
     iter_intensity = iter_intensity + config_.init_width;
     iter_time = iter_time + config_.init_width;
+    max_distance_ = config_.max_range;
     ++cloud.height;
   }
 
@@ -142,16 +135,19 @@ namespace velodyne_pointcloud
     //ROS_INFO_STREAM(azimuth << " RING "<< ring);
     int column = int(azimuth);
     //ROS_INFO_STREAM(column<< ",,,,, " <<img.cols);
-    
     int row = int(ring);
     //std::cout << "ROW " << mismatched types ‘std::initializer_list<_Tp>’ and ‘float’row << " column " << column <<  " Index " << row+column*img.rows << "value " << distance << std::endl;
     //For testing limit up to 1 m
     float maximum = 1.0;
     
-    int val = int(255*distance/config_.max_range);//std::min(float(255*distance),float(255*maximum));
+    int val = int(255*distance/max_distance_);//std::min(float(255*distance),float(255*maximum));
+    if (val > 255){
+      ROS_ERROR_STREAM("FIX:"<< val);
+      val = 255;
+    }
     //ROS_WARN_STREAM(val);
 
-    if (column > 359){
+    if (column > (img.cols-1)){
       ROS_INFO_STREAM("SKIP "<< column);
       return;
     }
@@ -179,13 +175,15 @@ namespace velodyne_pointcloud
 
   void PointcloudXYZIRSafe::addPoint(float x, float y, float z, uint16_t ring, const uint16_t azimuth, float distance, float intensity, float time)
   {
+
+    if(!pointInRange(distance)) return;
+
+
     //FROM https://iopscience.iop.org/article/10.1088/1757-899X/516/1/012018/pdf
-    auto  result = 360*azimuth/35999;//atan2 (y,x) * 180 / M_PI;
+    auto  result = (img.cols-1)*azimuth/35999;//atan2 (y,x) * 180 / M_PI;
     //ROS_INFO_STREAM(result <<  "  column");
 
     addPixel(result, distance,ring);
-
-    if(!pointInRange(distance)) return;
 
     // convert polar coordinates to Euclidean XYZ
 
@@ -211,31 +209,40 @@ namespace velodyne_pointcloud
     }
 
 
-     if(config_.transform)
+     if(config_.transform){
         transformPoint(x, y, z);
+     }
+     *(iter_x+ring) = x;
+     *(iter_y+ring) = y;
+     *(iter_z+ring) = z;
+     *(iter_intensity+ring) = intensity;
+     *(iter_ring+ring) = ring;
+     *(iter_time+time) = time;
 
-      *(iter_x+ring) = x;
-      *(iter_y+ring) = y;
-      *(iter_z+ring) = z;
-      *(iter_intensity+ring) = intensity;
-      *(iter_ring+ring) = ring;
-      *(iter_time+time) = time;
+    ++cloud.width;
+    ++iter_x;
+    ++iter_y;
+    ++iter_z;
+    ++iter_ring;
+    ++iter_intensity;
+    ++iter_time;
 
 
-      /*
+    /*
     *iter_x = x;
     *iter_y = y;
     *iter_z = z;
     *iter_ring = ring;
     *iter_intensity = intensity;
     *iter_time = time;
+    
+    ++cloud.width;
+    ++iter_x;
+    ++iter_y;
+    ++iter_z;
+    ++iter_ring;
+    ++iter_intensity;
+    ++iter_time;
     */
-    //++cloud.width;
-    //++iter_x;
-    //++iter_y;
-    //++iter_z;
-    //++iter_ring;
-    //++iter_intensity;
-    //++iter_time;
   }
 }

@@ -145,11 +145,12 @@ namespace velodyne_pointcloud
   void
     Transform::processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg)
   {
+    ROS_INFO("ProcessScan");
     if (output_.getNumSubscribers() == 0)         // no one listening?
       return;                                     // avoid much work
 
     boost::lock_guard<boost::mutex> guard(reconfigure_mtx_);
-
+    ROS_INFO("ProcessScan2");
     // allocate a point cloud with same time and frame ID as raw data
     container_ptr->setup(scanMsg);
 
@@ -161,8 +162,8 @@ namespace velodyne_pointcloud
     }
     // publish the accumulated cloud message
     ROS_INFO_STREAM("BEFORE FINISH");
-    ROS_INFO_STREAM("AFTER FINISH");
     container_ptr->finish();
+    ROS_INFO_STREAM("AFTER FINISH");
     output_.publish(container_ptr->finishCloud());
 
     diag_topic_->tick(scanMsg->header.stamp);

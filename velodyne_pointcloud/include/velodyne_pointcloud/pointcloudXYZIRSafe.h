@@ -88,6 +88,7 @@ private:
   float max_x_;
   float max_y_;
   float max_z_;
+  float max_distance_;
   boost::mutex mtx;
   bool init;
   bool haspublish;
