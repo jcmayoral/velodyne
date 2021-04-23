@@ -149,7 +149,7 @@ namespace velodyne_pointcloud
     float maximum = 1.0;
     
     int val = int(255*distance/config_.max_range);//std::min(float(255*distance),float(255*maximum));
-    ROS_WARN_STREAM(val);
+    //ROS_WARN_STREAM(val);
 
     if (column > 359){
       ROS_INFO_STREAM("SKIP "<< column);
@@ -160,7 +160,7 @@ namespace velodyne_pointcloud
     //std::cout << "ROW " << row << " column " << column  << std::endl;
     //std::cout << "IMG R " << img.rows << " IMG C "<< img.cols << " MAX " << img.rows* img.cols << std::endl;
     //img.at<int>(column+row*img.rows) = val ;
-    img.at<int>(row,column) = 255;
+    img.at<int>(row,column) = val;
 
     
     //for (int i=1; i< 10; i++)
@@ -179,8 +179,9 @@ namespace velodyne_pointcloud
 
   void PointcloudXYZIRSafe::addPoint(float x, float y, float z, uint16_t ring, const uint16_t azimuth, float distance, float intensity, float time)
   {
+    //FROM https://iopscience.iop.org/article/10.1088/1757-899X/516/1/012018/pdf
     auto  result = 360*azimuth/35999;//atan2 (y,x) * 180 / M_PI;
-    ROS_INFO_STREAM(result <<  "  column");
+    //ROS_INFO_STREAM(result <<  "  column");
 
     addPixel(result, distance,ring);
 
