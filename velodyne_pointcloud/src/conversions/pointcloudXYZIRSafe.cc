@@ -22,12 +22,14 @@ namespace velodyne_pointcloud
         init(false),img()//16,36000,CV_16UC1,0)
   {
     //Original
+    ROS_ERROR("CONstructor Safe");
     //img = cv::Mat::zeros(16,36000, CV_16UC1);
     //img = cv::Mat::zeros(320,1800, CV_16UC1);
     //Small Size to int8
     //img = cv::Mat::zeros(16,36000, CV_8UC1);
     //Resize Image for testing
     img = cv::Mat::zeros(16,120, CV_8UC1);
+    x_.resize(16*120,0);
 
 //          kernel = cv::Mat::ones(config->kernel_size,config->kernel_size,CV_32F )/ (float)(pow(config->kernel_size,2));
 
@@ -37,8 +39,11 @@ namespace velodyne_pointcloud
     sensor_msgs::Image out_msg;
     cv_bridge::CvImage img_bridge;
     std_msgs::Header header;
+    ROS_ERROR("FINISH");
 
+    //cv::Mat tmp(img);
     cv::Mat tmp(img);
+    std::memcpy(img.data, static_cast<void*>(x_.data()), img.rows*img.cols*sizeof(int));
 
     try{
       //these lines are just for testing rotating image
@@ -65,7 +70,7 @@ namespace velodyne_pointcloud
 
   void PointcloudXYZIRSafe::setup(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg){
     DataContainerBase::setup(scan_msg);
-    
+        ROS_ERROR("Safe setup");
     iter_x = sensor_msgs::PointCloud2Iterator<float>(cloud, "x");
     iter_y = sensor_msgs::PointCloud2Iterator<float>(cloud, "y");
     iter_z = sensor_msgs::PointCloud2Iterator<float>(cloud, "z");
@@ -84,12 +89,14 @@ namespace velodyne_pointcloud
     haspublish = false;
     start = std::chrono::high_resolution_clock::now();//std::chrono::system_clock::now();//std::clock();
 
-    if (init)
+  
+      if (init)
     {
       ROS_INFO_STREAM("Avoid init");
       return;
     }
     init = true;
+
 
     ros::NodeHandle nh("~");
 
@@ -142,13 +149,13 @@ namespace velodyne_pointcloud
     
     int val = int(255*distance/max_distance_);//std::min(float(255*distance),float(255*maximum));
     if (val > 255){
-      ROS_ERROR_STREAM("FIX:"<< val);
+      //ROS_ERROR_STREAM("FIX:"<< val);
       val = 255;
     }
     //ROS_WARN_STREAM(val);
 
     if (column > (img.cols-1)){
-      ROS_INFO_STREAM("SKIP "<< column);
+      //ROS_INFO_STREAM("SKIP "<< column);
       return;
     }
 
@@ -156,7 +163,8 @@ namespace velodyne_pointcloud
     //std::cout << "ROW " << row << " column " << column  << std::endl;
     //std::cout << "IMG R " << img.rows << " IMG C "<< img.cols << " MAX " << img.rows* img.cols << std::endl;
     //img.at<int>(column+row*img.rows) = val ;
-    img.at<int>(row,column) = val;
+    //img.at<int>(row,column) = val;
+    x_[row+column*row] = 255;
 
     
     //for (int i=1; i< 10; i++)

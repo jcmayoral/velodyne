@@ -95,6 +95,7 @@ private:
   double publish_rate;
   CTime start;
   cv::Mat img;
+  std::vector<int> x_;
 };
 }  // namespace velodyne_pointcloud
 

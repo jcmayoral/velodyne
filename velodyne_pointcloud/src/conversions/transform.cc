@@ -109,7 +109,7 @@ namespace velodyne_pointcloud
       config_.organize_cloud = config.organize_cloud;
       config_.lidarsafe = config.lidarsafe;
 
-      if(config_.organize_cloud)
+      if(config_.organize_cloud && !config_.lidarsafe)
       {
         ROS_INFO_STREAM("Using the organized cloud format...");
         container_ptr = boost::shared_ptr<OrganizedCloudXYZIR>(
@@ -125,6 +125,7 @@ namespace velodyne_pointcloud
               new PointcloudXYZIRSafe(config_.max_range, config_.min_range,
                                   config_.target_frame, config_.fixed_frame,
                                   data_->scansPerPacket()));
+          config_.organize_cloud = false;
         }
         else{
           container_ptr = boost::shared_ptr<PointcloudXYZIR>(
